@@ -1,12 +1,14 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { Task, FloorItem, FurnitureType, TaskStatus } from "../types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+// Initialize AI instance lazily to prevent top-level crashes if environment variables are missing on load
+const getAI = () => new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 export const generateEventScenario = async (
   prompt: string
 ): Promise<{ tasks: Task[]; floorItems: FloorItem[] } | null> => {
   try {
+    const ai = getAI();
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash",
       contents: `Generate a realistic wedding venue operations scenario based on this request: "${prompt}".
@@ -70,7 +72,8 @@ export const generateEventScenario = async (
 
 export const generateChatReply = async (history: string[], newMessage: string): Promise<string> => {
   try {
-     const response = await ai.models.generateContent({
+    const ai = getAI();
+    const response = await ai.models.generateContent({
       model: "gemini-2.5-flash",
       contents: `You are a helpful Venue Operations AI assistant. 
       Briefly answer the user's question or acknowledge the operational update.
